@@ -40,6 +40,14 @@ void setup()   {
 
   // Conecto al Wifi
   outputMSG("WIFI:", false);
+
+  //Static IP address configuration
+  IPAddress staticIP(192, 168, 2, 51); //ESP static ip
+  IPAddress gateway(192, 168, 2, 1);   //IP Address of your WiFi Router (Gateway)
+  IPAddress subnet(255, 255, 255, 0);  //Subnet mask
+  IPAddress dns(8, 8, 8, 8);  //DNS
+  WiFi.config(staticIP, subnet, gateway, dns);
+  
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
