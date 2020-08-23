@@ -1,4 +1,4 @@
-#include <Adafruit_SSD1306.h>
+#include "Adafruit_SSD1306.h"
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -16,13 +16,13 @@ Ticker temporizador;
 
 int repeticiones = 0;
 int contador = 0;
- 
+
 void setup()   {
-  
-  // Inicio el puerto del rele  
+
+  // Inicio el puerto del rele
   pinMode(relayPin, OUTPUT);
 
-  // Inicio el log en el puerto serie 
+  // Inicio el log en el puerto serie
   Serial.begin(115200);
 
   // Inicio la pantalla oled
@@ -32,7 +32,7 @@ void setup()   {
   OLED.clearDisplay();
   OLED.setTextSize(1);
   OLED.setTextColor(WHITE);
-  OLED.setCursor(0,0);
+  OLED.setCursor(0, 0);
 
   outputMSG("----------", true);
   outputMSG(" STARTUP", true);
@@ -42,12 +42,12 @@ void setup()   {
   outputMSG("WIFI:", false);
 
   //Static IP address configuration
-  IPAddress staticIP(192, 168, 2, 51); //ESP static ip
+  IPAddress staticIP(192, 168, 2, 52); //ESP static ip
   IPAddress gateway(192, 168, 2, 1);   //IP Address of your WiFi Router (Gateway)
   IPAddress subnet(255, 255, 255, 0);  //Subnet mask
   IPAddress dns(8, 8, 8, 8);  //DNS
   WiFi.config(staticIP, subnet, gateway, dns);
-  
+
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -59,30 +59,29 @@ void setup()   {
   // Arranco el servidor web
   server.on("/", handleRoot);
   server.on("/on", handleOn);
-  server.on("/time", handleTime);     
+  server.on("/time", handleTime);
   server.begin();
   outputMSG("Server: OK", true);
 
   // Limpio la pantalla
   delay(2000);
   clearDisplay();
- 
-} 
- 
+
+}
+
 void loop() {
-  
-  server.handleClient(); 
-  
+
+  server.handleClient();
+
 }
 
-void handleRoot(){
+void handleRoot() {
 
-  String web = MAIN_page; //Read HTML contents
-  server.send(200, "text/html",web);
-  
+  server.send_P(200, "text/html", MAIN_page);
+
 }
 
-void handleOn(){
+void handleOn() {
 
   //Seteo el tiempo que se va a encender la calefaccion
   contador = 0;
@@ -90,35 +89,35 @@ void handleOn(){
 
   //Arranco el programa de la calefaccion
   calefaccion();
-  
+
   server.send(200, "application/json", "{\"response\":\"OK\"}");
-  
+
 }
 
-void handleTime(){
+void handleTime() {
 
   String time = "";
 
-  if(contador > 0){
-    
+  if (contador > 0) {
+
     time = String((repeticiones + 1) - contador);
-    
-  }else{
-    
+
+  } else {
+
     time = String(repeticiones - contador);
   }
-  
-  server.send(200, "application/json", "{\"time\":"+ time + "}");
- 
+
+  server.send(200, "application/json", "{\"time\":" + time + "}");
+
 }
 
-void calefaccion(){
+void calefaccion() {
 
   //Muestro el tiempo en pantalla
   showTime(repeticiones - contador);
 
   //Si el tiempo ha pasado
-  if(contador >= repeticiones){
+  if (contador >= repeticiones) {
 
     //Pongo los contadores a 0
     contador = 0;
@@ -130,74 +129,74 @@ void calefaccion(){
     //Muestro off en pantalla
     showOff();
 
-  //Si el tiempo no ha pasado
-  }else{
+    //Si el tiempo no ha pasado
+  } else {
 
     //Enciendo el rele
     digitalWrite(relayPin, HIGH);
-    
+
     //Le sumo un minuto al contador de minutos
     contador++;
 
     //Llamo a la funcion cada 60s
     temporizador.attach(60, calefaccion);
-    
+
   }
-  
+
 }
 
-void outputMSG(String msg, bool newLine){
+void outputMSG(String msg, bool newLine) {
 
-  if(newLine){
-    
+  if (newLine) {
+
     Serial.println(msg);
     OLED.println(msg);
     screenLinesUsed++;
-    
-  }else{
-    
+
+  } else {
+
     Serial.print(msg);
     OLED.print(msg);
-          
+
   }
-  
+
   OLED.display();
-  
+
 }
 
-void showTime(int time){
-  
+void showTime(int time) {
+
   OLED.clearDisplay();
-  OLED.setCursor(4,0);
+  OLED.setCursor(4, 0);
   OLED.setTextColor(WHITE);
-  
+
   OLED.setTextSize(5);
   OLED.println(String(time));
-  
+
   OLED.setTextSize(1);
-  OLED.setCursor(5,40);
-  OLED.println(" minutes"); 
-  
+  OLED.setCursor(5, 40);
+  OLED.println(" minutes");
+
   OLED.display();
-       
+
 }
 
-void showOff(){
-  
+void showOff() {
+
   OLED.clearDisplay();
-  OLED.setCursor(5,15);
+  OLED.setCursor(5, 15);
   OLED.setTextColor(WHITE);
   OLED.setTextSize(3);
   OLED.println("OFF");
   OLED.display();
-  
+
   temporizador.attach(5, clearDisplay);
 
 }
 
-void clearDisplay(){
-  
+void clearDisplay() {
+
   OLED.clearDisplay();
-  OLED.display();  
-    
+  OLED.display();
+
 }

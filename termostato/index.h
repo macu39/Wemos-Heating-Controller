@@ -1,4 +1,4 @@
-const char MAIN_page[] PROGMEM = R"=====(
+static const char MAIN_page[] PROGMEM = R"=====(
 <html>
     <head>
         <title>Calefaccion</title>
